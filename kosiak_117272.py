@@ -113,19 +113,13 @@ def iterate_policy(policy, u, trans_props_table):
 
     for i in range(M + 1):
         for j in range(M + 1):
-            max_cu = calculate_move_result(0, i, j, u, trans_props_table)
-            p = 0
 
-            #  we can borrow only as mny cars as we have
-            for k in range(1, min([i, 5]) + 1):
-                temp_u = calculate_move_result(k, i, j, u, trans_props_table)
-
-                if temp_u > max_cu:
-                    max_cu = temp_u
-                    p = k
+            # calculate first value
+            max_cu = calculate_move_result(max([-5, -j]), i, j, u, trans_props_table)
+            p = max([-5, -j])
 
             # we can borrow only as mny cars as we have
-            for k in range(max([-5, -j]), 0):
+            for k in range(max([-5, -j]) + 1, min([i, 5]) + 1):
                 temp_u = calculate_move_result(k, i, j, u, trans_props_table)
 
                 if temp_u > max_cu:
@@ -155,7 +149,7 @@ def get_policy(initial_u, trans_props):
     print(''.join(['-' for i in range(70)]))
 
     # count of iterations
-    iterations = 10
+    iterations = 3
 
     for i in range(iterations):
         p, u = iterate_policy(p, u, trans_props)
@@ -177,7 +171,9 @@ def main():
 
     trans_props = get_a_props_table()
 
-    #  print_2d(trans_props)
+    # print_float_2d(trans_props)
+    # return
+
     # print_float_2d(trans_rewards)
     # return
 
