@@ -92,7 +92,7 @@ def calculate_move_result(cars_to_move, cars_in_a, cars_in_b, u, transition_prob
             reward_val = 0
 
             if 0 <= i < M + 1 and 0 <= j < M + 1:
-                current_val = u[i][j]
+                current_val += u[i][j]
 
                 # value smaller than current is equal to amount of borrowed cars
                 if i < next_i:
@@ -102,7 +102,7 @@ def calculate_move_result(cars_to_move, cars_in_a, cars_in_b, u, transition_prob
                     reward_val += car_borrow_reward * (next_j - j)
 
             # Belman equation R(s,a) {without adding current state reward u[i,j]}
-            acc += (discount_rate * current_val + reward_val) * transition_probs[i - (next_i - M)][j - (next_j - M)]
+            acc += discount_rate * (current_val + reward_val) * transition_probs[i - (next_i - M)][j - (next_j - M)]
 
     return acc
 
@@ -149,7 +149,7 @@ def get_policy(initial_u, trans_props):
     print(''.join(['-' for i in range(70)]))
 
     # count of iterations
-    iterations = 3
+    iterations = 20
 
     for i in range(iterations):
         p, u = iterate_policy(p, u, trans_props)
