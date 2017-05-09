@@ -91,15 +91,17 @@ def calculate_move_result(cars_to_move, cars_in_a, cars_in_b, u, transition_prob
 
             reward_val = 0
 
-            if 0 <= i < M + 1 and 0 <= j < M + 1:
-                current_val += u[i][j]
+            temp_i = min([max([0, i]), M])
+            temp_j = min([max([0, j]), M])
 
-                # value smaller than current is equal to amount of borrowed cars
-                if i < next_i:
-                    reward_val += car_borrow_reward * (next_i - i)
+            current_val += u[temp_i][temp_j]
 
-                if j < next_j:
-                    reward_val += car_borrow_reward * (next_j - j)
+            # value smaller than current is equal to amount of borrowed cars
+            if temp_i < next_i:
+                reward_val += car_borrow_reward * (next_i - temp_i)
+
+            if temp_j < next_j:
+                reward_val += car_borrow_reward * (next_j - temp_j)
 
             # Belman equation R(s,a) {without adding current state reward u[i,j]}
             acc += discount_rate * (current_val + reward_val) * transition_probs[i - (next_i - M)][j - (next_j - M)]
@@ -114,12 +116,16 @@ def iterate_policy(policy, u, trans_props_table):
     for i in range(M + 1):
         for j in range(M + 1):
 
-            # calculate first value
-            max_cu = calculate_move_result(max([-5, -j]), i, j, u, trans_props_table)
-            p = max([-5, -j])
-
             # we can borrow only as mny cars as we have
-            for k in range(max([-5, -j]) + 1, min([i, 5]) + 1):
+            # and moving more cars that
+            from_a_to_b = min([i, M - j, 5])
+            from_b_to_a = max([-5, -j, -(M - i)])
+
+            # calculate first value
+            max_cu = calculate_move_result(from_b_to_a, i, j, u, trans_props_table)
+            p = from_b_to_a
+
+            for k in range(from_b_to_a + 1, from_a_to_b + 1):
                 temp_u = calculate_move_result(k, i, j, u, trans_props_table)
 
                 if temp_u > max_cu:
@@ -149,7 +155,7 @@ def get_policy(initial_u, trans_props):
     print(''.join(['-' for i in range(70)]))
 
     # count of iterations
-    iterations = 20
+    iterations = 50
 
     for i in range(iterations):
         p, u = iterate_policy(p, u, trans_props)
