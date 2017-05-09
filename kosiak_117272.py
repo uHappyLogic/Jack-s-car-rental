@@ -11,13 +11,9 @@ A_br = 3  # A borrow count estimate
 A_rr = 3  # A return count estimate
 B_br = 4
 B_rr = 2
-car_value_1 = 0
-car_value_2 = 0
 car_borrow_reward = 100
 discount_rate = 0.9
 cars_move_penalty = -20
-
-line = ''.join(['-' for f in range(70)])
 
 
 def poisson(pi, n): return m.pow(pi, n) / m.factorial(n) * m.pow(m.e, -pi)
@@ -27,13 +23,9 @@ def print_number_2d(ar):
     print(('\n'.join([' '.join(['{0:2d}'.format(el) for el in line]) for line in ar])))
 
 
-def print_float_2d(ar):
-    print(('\n'.join([', '.join(['{0:.3f}'.format(el) for el in line]) for line in ar])))
-
-
 def get_initial_u():
     rewards = [
-        [j * car_value_2 + i * car_value_1 for j in range(M + 1)] for i in range(M + 1)
+        [0 for j in range(M + 1)] for i in range(M + 1)
     ]
 
     return rewards
@@ -62,18 +54,9 @@ def get_a_props_table():
 
     c_global_transition_probs = [[0 for i in range(2 * M + 1)] for j in range(2 * M + 1)]
 
-    print('\n'.join([str(el) for el in a_c_probs]))
-    print(line)
-
-    print('\n'.join([str(el) for el in b_c_probs]))
-    print(line)
-
     for i in range(2 * M + 1):
         for j in range(2 * M + 1):
             c_global_transition_probs[i][j] = a_c_probs[i] * b_c_probs[j]
-
-    print_float_2d(c_global_transition_probs)
-    print(line)
 
     return c_global_transition_probs
 
@@ -150,36 +133,24 @@ def iterate_policy(policy, u, trans_props_table):
 
 def get_policy(initial_u, trans_props):
 
-    # if True prints 'u' matrix
-    print_u = False
-
     initial_policy = get_initial_policy()
 
     p, u, polict_changed, usability_changed = iterate_policy(initial_policy, initial_u, trans_props)
 
-    print(str(-1) + ' ' + line)
-    if print_u:
-        print_float_2d(u)
-    else:
-        print_number_2d(p)
-
     # count of iterations
     iterations = 100
+    times = 2
 
     for i in range(iterations):
-        print(str(i) + ' ' + line)
         p, u, polict_changed, usability_changed = iterate_policy(p, u, trans_props)
 
-        if print_u:
-            print_float_2d(u)
-        else:
-            print_number_2d(p)
-
         if polict_changed:
-            print('policy changed')
+            times = 2
+        else:
+            times -= 1
 
-        if usability_changed:
-            print('usability changed')
+        if times == 0:
+            break
 
     return p
 
@@ -187,17 +158,10 @@ def get_policy(initial_u, trans_props):
 def main():
     initial_u = get_initial_u()
 
-    #  print(np.matrix(initial_u))
-
     trans_props = get_a_props_table()
+    p = get_policy(initial_u, trans_props)
 
-    # print_float_2d(trans_props)
-    # return
-
-    # print_float_2d(trans_rewards)
-    # return
-
-    get_policy(initial_u, trans_props)
+    print_number_2d(p)
 
 
 if __name__ == '__main__':
